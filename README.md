@@ -2,6 +2,15 @@
 
 * Patricio López Juri
 
+## Install
+
+On macOS before installing `mpi`, make sure you have removed OpenMP.
+
+```sh
+brew uninstall open-mpi
+brew install mpich --without-fortran
+```
+
 ## Run
 
 ```sh

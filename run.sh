@@ -10,13 +10,13 @@ print() {
   echo "--- $1 ---"
 }
 
-print 'Running secuential'
-time ./build/secuential $graph_in
-print 'Done secuential'
-echo ''
+# print 'Running secuential'
+# time ./build/secuential $graph_in
+# print 'Done secuential'
+# echo ''
 
 print 'Running parallel'
-time ./build/parallel $graph_in
+time mpirun -np 4 ./build/parallel $graph_in
 print 'Done parallel'
 echo ''
 
