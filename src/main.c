@@ -24,12 +24,13 @@ Graph *read_graph(char *path) {
   graph->adjacency = calloc(graph->N, sizeof(size_t *));
   for (size_t k = 0; k < graph->N; k++) {
     graph->adjacency[k] = calloc(graph->N, sizeof(size_t));
+    for (size_t p = 0; p < graph->N; p++) {
+      graph->adjacency[k][p] = SIZE_MAX;
+    }
   }
 
   // Build graph
   for (size_t k = 0; k < graph->N - 1; k++) {
-    graph->adjacency[k] = calloc(graph->N, sizeof(size_t));
-
     read = getline(&line, &length, file);
     size_t i = k + 1;
     while ((token = strsep(&line, " ")) != NULL) {
@@ -74,41 +75,76 @@ size_t factorial(size_t n) {
   return result;
 }
 
+size_t cost_for(Graph *graph, size_t *path) {
+  size_t current_cost = 0;
+  for (size_t k = 0; k < graph->N - 1; k++) {
+    size_t from = path[k];
+    size_t to = path[k + 1];
+    size_t cost = graph->adjacency[from][to];
+    // printf("%lu <- [%lu] -> %lu\n", from, cost, to);
+    current_cost += cost;
+  }
+  return current_cost;
+}
+
+void print_graph(Graph *graph) {
+  for (size_t k = 0; k < graph->N - 1; k++) {
+    for (size_t i = 0; i < graph->N - 1; i++) {
+      size_t cost = graph->adjacency[k][i];
+      printf("%lu ", cost);
+    }
+    printf("%s\n", "");
+  }
+}
+
+size_t *range(size_t start, size_t end) { // range [stat, end)
+  size_t *arr = calloc(end - start, sizeof(size_t));
+  for (size_t k = start; k < start + end - 1; k++) {
+    arr[k - start] = k;
+  }
+  return arr;
+}
+
 int main(int argc, char *argv[]) {
   int rank, size, rc;
 
   char *graph_in_path = argv[1];
   Graph *graph = read_graph(graph_in_path);
 
-  // Roads from 0 to its adjacents
+  // Adjacents of starting node (0)
   // In our example: arr = [1,2,3,4]
-  size_t *arr = calloc(graph->N - 1, sizeof(size_t));
-  for (size_t k = 0; k < graph->N - 1; k++) {
-    arr[k] = k + 1;
-  }
+  size_t *arr = range(1, 5);
 
+  // Create all possible paths
+  // Each path size: graph->N
   size_t combs = factorial(graph->N - 1);
-  size_t **acc = calloc(combs, sizeof(size_t*));
+  size_t **options = calloc(combs, sizeof(size_t*));
   for (size_t i = 0; i < combs; i++) {
-    acc[i] = calloc(graph->N, sizeof(size_t));
+    options[i] = calloc(graph->N, sizeof(size_t));
   }
-
   size_t pos = 0;
-  paths(acc, &pos, arr, 0, 4);
-  // each path size: graph->N
+  paths(options, &pos, arr, 0, 4); // Saved in options
 
+
+  // Find best path
+  size_t better = -1; // better options index
+  size_t lowest_cost = SIZE_MAX;
   for (size_t i = 0; i < combs; i++) {
-    for (size_t j = 0; j < 5; j++) {
-      printf("%lu ", acc[i][j]);
+    size_t *path = options[i];
+    // printf("---\nCombination %lu\n", i);
+    size_t current_cost = cost_for(graph, path);
+    // printf("Cost: %lu\n", current_cost);
+    if (current_cost < lowest_cost) {
+      better = i;
+      lowest_cost = current_cost;
     }
-    printf("\n");
   }
 
-  // for (size_t k = 0; k < graph->N - 1; k++) {
-  //   for (size_t i = 0; i < graph->N - 1; i++) {
-  //     size_t cost = graph->adjacency[k][i];
-  //   }
-  // }
+  printf("Path: ");
+  for (size_t i = 0; i < graph->N; i++) {
+    printf("%lu ", options[better][i]);
+  }
+  printf("\nCost: %lu\n", lowest_cost);
 
   rc = MPI_Init(&argc, &argv);
   if (rc != MPI_SUCCESS) {
