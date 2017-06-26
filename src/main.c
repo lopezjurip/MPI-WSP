@@ -48,17 +48,17 @@ void swap(size_t *a, size_t *b) {
   *b = aux;
 }
 
-void roads(size_t **acc, size_t *array, size_t i, size_t length) {
+void roads(size_t **acc, size_t *position, size_t *array, size_t i, size_t length) {
   if (length == i) {
-    // TODO
+    size_t val = *position;
     for (size_t j = 0; j < i; j++) {
-     printf("%lu ", array[j]);
+      acc[val][j] = array[j];
     }
-    printf("\n");
+    *position = val + 1;
   }
   for (size_t j = i; j < length; j++) {
      swap(array + i, array + j);
-     roads(acc, array, i + 1, length);
+     roads(acc, position, array, i + 1, length);
      swap(array + i, array + j);
   }
   return;
@@ -91,7 +91,15 @@ int main(int argc, char *argv[]) {
     acc[i] = calloc(graph->N - 1, sizeof(size_t));
   }
 
-  roads(acc, arr, 0, 4);
+  size_t pos = 0;
+  roads(acc, &pos, arr, 0, 4);
+
+  for (size_t i = 0; i < combs; i++) {
+    for (size_t j = 0; j < 4; j++) {
+      printf("%lu ", acc[i][j]);
+    }
+    printf("\n");
+  }
 
   // for (size_t k = 0; k < graph->N - 1; k++) {
   //   for (size_t i = 0; i < graph->N - 1; i++) {
