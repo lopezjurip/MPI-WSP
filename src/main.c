@@ -48,17 +48,19 @@ void swap(size_t *a, size_t *b) {
   *b = aux;
 }
 
-void roads(size_t **acc, size_t *position, size_t *array, size_t i, size_t length) {
+void paths(size_t **acc, size_t *position, size_t *array, size_t i, size_t length) {
   if (length == i) {
     size_t val = *position;
+    acc[val][0] = 0;
     for (size_t j = 0; j < i; j++) {
-      acc[val][j] = array[j];
+      acc[val][j + 1] = array[j];
     }
     *position = val + 1;
   }
+
   for (size_t j = i; j < length; j++) {
      swap(array + i, array + j);
-     roads(acc, position, array, i + 1, length);
+     paths(acc, position, array, i + 1, length);
      swap(array + i, array + j);
   }
   return;
@@ -88,14 +90,15 @@ int main(int argc, char *argv[]) {
   size_t combs = factorial(graph->N - 1);
   size_t **acc = calloc(combs, sizeof(size_t*));
   for (size_t i = 0; i < combs; i++) {
-    acc[i] = calloc(graph->N - 1, sizeof(size_t));
+    acc[i] = calloc(graph->N, sizeof(size_t));
   }
 
   size_t pos = 0;
-  roads(acc, &pos, arr, 0, 4);
+  paths(acc, &pos, arr, 0, 4);
+  // each path size: graph->N
 
   for (size_t i = 0; i < combs; i++) {
-    for (size_t j = 0; j < 4; j++) {
+    for (size_t j = 0; j < 5; j++) {
       printf("%lu ", acc[i][j]);
     }
     printf("\n");
