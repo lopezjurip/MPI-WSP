@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
   size_t pos = 0;
   size_t combs = 0;
   size_t better = -1; // better options index
-  size_t lowest_cost = SIZE_MAX;
+  size_t lowest_cost = -1;
 
   // Read graph from file
   graph = read_graph(graph_in_path);
@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 
   // Find best path
   better = -1; // better options index
-  lowest_cost = SIZE_MAX;
+  lowest_cost = -1;
   for (size_t i = 0; i < combs; i++) {
     size_t *path = options[i];
     size_t current_cost = cost_for(graph, path);

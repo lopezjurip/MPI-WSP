@@ -20,7 +20,7 @@ Graph *read_graph(char *path) {
   for (size_t k = 0; k < graph->N; k++) {
     graph->adjacency[k] = calloc(graph->N, sizeof(size_t));
     for (size_t p = 0; p < graph->N; p++) {
-      graph->adjacency[k][p] = SIZE_MAX;
+      graph->adjacency[k][p] = -1;
     }
   }
 

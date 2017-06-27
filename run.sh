@@ -16,7 +16,7 @@ print 'Done secuential'
 echo ''
 
 print 'Running parallel'
-time mpirun -np 4 ./build/parallel $graph_in
+time mpirun -hostfile ./hosts.txt -N 4 ./build/parallel $graph_in
 print 'Done parallel'
 echo ''
 

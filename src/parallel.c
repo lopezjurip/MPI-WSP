@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
   size_t pos = 0;
   size_t combs = 0;
   size_t better = -1; // better options index
-  size_t lowest_cost = SIZE_MAX;
+  size_t lowest_cost = -1;
   size_t elements_per_proc = 0;
 
   // Start MPI

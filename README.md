@@ -23,4 +23,4 @@ chmod +x ./run.sh
 
 ## Analysis
 
-TODO
+See: [`docs/informe.pdf`](./docs/informe.pdf).
