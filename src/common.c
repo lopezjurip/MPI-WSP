@@ -30,7 +30,6 @@ Graph *read_graph(char *path) {
     size_t i = k + 1;
     while ((token = strsep(&line, " ")) != NULL) {
       size_t cost = atoi(token);
-      // printf("%lu <-[%lu]-> %lu\n", k, cost, i);
       graph->adjacency[k][i] = graph->adjacency[i][k] = cost;
       i += 1;
     }

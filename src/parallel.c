@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
   for (size_t i = 0; i < combs; i++) {
     options[i] = calloc(graph->N, sizeof(size_t));
   }
-  paths(options, &pos, adjacents, 0, 4); // Saved in 'options'
+  paths(options, &pos, adjacents, 0, graph->N - 1); // Saved in 'options'
 
   // Only on root process:
   if (rank == 0) {

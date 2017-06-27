@@ -2,7 +2,7 @@
 make -f Makefile
 
 # Image and param to use
-graph_def='1'
+graph_def='2'
 if [[ -z $1 ]]; then graph_in="test/graph_in/${graph_def}.txt"; else graph_in=$1; fi
 
 # Run stuff
