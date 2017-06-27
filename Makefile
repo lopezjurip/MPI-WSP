@@ -1,4 +1,4 @@
-compile: src/main.c
+compile: src/main.c src/parallel.c
 	mkdir -p build
-	# gcc -o build/secuential src/main.c
-	mpicc ./src/main.c -o ./build/parallel
+	gcc ./src/main.c -o ./build/secuential
+	mpicc ./src/parallel.c -o ./build/parallel
