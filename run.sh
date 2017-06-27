@@ -16,7 +16,7 @@ print() {
 # echo ''
 
 print 'Running parallel'
-time mpirun -np 1 ./build/parallel $graph_in
+time mpirun -np 4 ./build/parallel $graph_in
 print 'Done parallel'
 echo ''
 

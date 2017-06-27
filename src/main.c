@@ -107,44 +107,15 @@ size_t *range(size_t start, size_t end) { // range [stat, end)
 
 int main(int argc, char *argv[]) {
   int rank, size, rc;
-
-  char *graph_in_path = argv[1];
-  Graph *graph = read_graph(graph_in_path);
-
-  // Adjacents of starting node (0)
-  // In our example: arr = [1,2,3,4]
-  size_t *arr = range(1, 5);
-
-  // Create all possible paths
-  // Each path size: graph->N
-  size_t combs = factorial(graph->N - 1);
-  size_t **options = calloc(combs, sizeof(size_t*));
-  for (size_t i = 0; i < combs; i++) {
-    options[i] = calloc(graph->N, sizeof(size_t));
-  }
-  size_t pos = 0;
-  paths(options, &pos, arr, 0, 4); // Saved in options
-
-
-  // Find best path
+  char *graph_in_path;
+  Graph *graph = NULL;
+  size_t *distribution;
+  size_t *arr;
+  size_t combs = 0;
+  size_t **options;
   size_t better = -1; // better options index
   size_t lowest_cost = SIZE_MAX;
-  for (size_t i = 0; i < combs; i++) {
-    size_t *path = options[i];
-    // printf("---\nCombination %lu\n", i);
-    size_t current_cost = cost_for(graph, path);
-    // printf("Cost: %lu\n", current_cost);
-    if (current_cost < lowest_cost) {
-      better = i;
-      lowest_cost = current_cost;
-    }
-  }
-
-  printf("Path: ");
-  for (size_t i = 0; i < graph->N; i++) {
-    printf("%lu ", options[better][i]);
-  }
-  printf("\nCost: %lu\n", lowest_cost);
+  size_t elements_per_proc;
 
   rc = MPI_Init(&argc, &argv);
   if (rc != MPI_SUCCESS) {
@@ -153,6 +124,73 @@ int main(int argc, char *argv[]) {
   }
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+  graph_in_path = argv[1];
+  graph = read_graph(graph_in_path);
+
+  // Adjacents of starting node (0)
+  // In our example: arr = [1,2,3,4]
+  arr = range(1, graph->N);
+
+  // Create all possible paths
+  // Each path size: graph->N
+  combs = factorial(graph->N - 1);
+  elements_per_proc = combs / size;
+  options = calloc(combs, sizeof(size_t*));
+  for (size_t i = 0; i < combs; i++) {
+    options[i] = calloc(graph->N, sizeof(size_t));
+  }
+  size_t pos = 0;
+  paths(options, &pos, arr, 0, 4); // Saved in 'options'
+
+  if (rank == 0) {
+    // distribution = calloc(elements_per_proc, sizeof(size_t));
+    distribution = range(0, combs);
+  }
+
+  // Create a buffer that will hold a subset of the random numbers
+  size_t *sub_paths = calloc(elements_per_proc, sizeof(size_t));
+
+  // Scatter the random numbers to all processes
+  MPI_Scatter(distribution, elements_per_proc, MPI_UNSIGNED_LONG, sub_paths,
+              elements_per_proc, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+
+
+  // Find best path in sub_paths
+  for (size_t i = 0; i < elements_per_proc; i++) {
+    size_t *path = options[sub_paths[i]];
+    // printf("I %d Got %lu\n", rank, sub_paths[i]);
+    // printf("---\nCombination %lu\n", i);
+    size_t current_cost = cost_for(graph, path);
+    // printf("Cost: %lu\n", current_cost);
+    if (current_cost < lowest_cost) {
+      better = sub_paths[i];
+      lowest_cost = current_cost;
+    }
+  }
+
+  size_t *results = NULL;
+  if (rank == 0) {
+    results = calloc(size, sizeof(size_t));
+  }
+  MPI_Gather(&better, 1, MPI_UNSIGNED_LONG, results, 1, MPI_UNSIGNED_LONG, 0,
+             MPI_COMM_WORLD);
+
+  if (rank == 0) {
+    for (size_t i = 0; i < size; i++) {
+      size_t *path = options[results[i]];
+      size_t current_cost = cost_for(graph, path);
+      if (current_cost < lowest_cost) {
+        better = sub_paths[i];
+        lowest_cost = current_cost;
+      }
+    }
+    printf("Rank %d : Path: ", rank);
+    for (size_t i = 0; i < graph->N; i++) {
+      printf("%lu ", options[better][i]);
+    }
+    printf("\nCost: %lu\n", lowest_cost);
+  }
 
   MPI_Finalize();
 
