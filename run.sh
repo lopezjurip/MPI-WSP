@@ -20,9 +20,4 @@ time mpirun -np 4 ./build/parallel $graph_in
 print 'Done parallel'
 echo ''
 
-# print 'Running parallel (over-CPU)'
-# time OMP_NUM_THREADS=10 ./build/parallel $graph_in $kernel $passes $graph_out
-# print 'Done parallel over'
-# echo ''
-
 echo 'Done!'
